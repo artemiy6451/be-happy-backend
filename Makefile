@@ -23,8 +23,15 @@ pytest:
 check: black ruff mypy pytest
 	@echo "All check passed!"
 
+db:
+	poetry run alembic upgrade head 
+	poetry run alembic current 
+
 run:
-	poetry run python $(SRC)main.py
+	poetry run fastapi run $(SRC)main.py
+
+dev:
+	poetry run fastapi dev $(SRC)main.py
 
 clean:
 	find . -type f -name "*.pyc" -delete

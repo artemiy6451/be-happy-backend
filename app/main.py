@@ -1,6 +1,9 @@
-def main(name: str) -> None:
-    print(f"Hello {name}!")
+from fastapi import APIRouter, FastAPI
+from user.router import user_router
 
+app = FastAPI()
 
-if __name__ == "__main__":
-    main("world")
+routers: list[APIRouter] = [user_router]
+
+for router in routers:
+    app.include_router(router)

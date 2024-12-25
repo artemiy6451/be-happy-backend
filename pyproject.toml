@@ -8,6 +8,12 @@ package-mode=false
 
 [tool.poetry.dependencies]
 python = "^3.12"
+fastapi = {extras = ["all"], version = "^0.115.6"}
+telegram-webapp-auth = "^2.0.1"
+pydantic-settings = "^2.7.0"
+sqlalchemy = {extras = ["mypy"], version = "^2.0.36"}
+asyncpg = "^0.30.0"
+alembic = "^1.14.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -31,6 +37,9 @@ include = '\.pyi?$'
 [tool.ruff]
 lint.select = ["F", "E", "W", "I", "N", "PL", "C", "B"]
 line-length = 89
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends", "fastapi.Query", "fastapi.params.Query"]
 
 [tool.pytest.ini_options]
 pythonpath = [
