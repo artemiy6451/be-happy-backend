@@ -1,6 +1,7 @@
 from logging.config import fileConfig
 
 from alembic import context
+from city.models import BuildingModel  # noqa
 from config import Settings
 from models import Base
 from sqlalchemy import engine_from_config, pool

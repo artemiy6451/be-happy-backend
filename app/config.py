@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     db_pass: str = ""
 
     daily_reward_time: int = 24
+    card_reward_time: int = 3
 
     @property
     def database_uri(self):
