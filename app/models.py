@@ -1,17 +1,21 @@
 import datetime
 from typing import Annotated
 
-from sqlalchemy import ForeignKey, Integer, MetaData, text
+from sqlalchemy import DateTime, ForeignKey, Integer, MetaData, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 metadata = MetaData()
 
 created_at = Annotated[
-    datetime.datetime, mapped_column(server_default=text("TIMEZONE('utc', now())"))
+    datetime.datetime,
+    mapped_column(
+        DateTime(timezone=True), server_default=text("TIMEZONE('utc', now())")
+    ),
 ]
 updated_at = Annotated[
     datetime.datetime,
     mapped_column(
+        DateTime(timezone=True),
         server_default=text("TIMEZONE('utc', now())"),
         onupdate=datetime.datetime.now(datetime.timezone.utc),
     ),

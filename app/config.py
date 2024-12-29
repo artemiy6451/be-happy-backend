@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     db_user: str = ""
     db_pass: str = ""
 
+    daily_reward_time: int = 24
+
     @property
     def database_uri(self):
         return (

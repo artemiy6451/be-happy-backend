@@ -58,3 +58,19 @@ async def get_balance(
 ):
     response = await service.get_balance(user_id)
     return response
+
+
+@user_router.post(
+    "/{user_id}/earn_daily",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": UserBalanceSchema},
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
+)
+async def earn_daily(
+    user_id: int,
+    service: Annotated[UserService, Depends(user_service)],
+):
+    balance = await service.earn(user_id)
+    return balance

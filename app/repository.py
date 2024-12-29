@@ -68,7 +68,7 @@ class SQLAlchemyRepository(AbstractRepository, Generic[T]):
         res = await self.session.execute(stmt)
         res = [row[0].to_read_model() for row in res.all()]
         await self.session.commit()
-        return res
+        return res[0]
 
     async def delete_one(self, id: int) -> int:
         stmt = delete(self.model).where(self.model.id == id).returning(self.model.id)
