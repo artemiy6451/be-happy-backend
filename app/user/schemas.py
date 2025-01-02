@@ -30,5 +30,18 @@ class UserCardModel(BaseModel):
     last_used_at: datetime
 
 
+class UserBuildingSchema(BaseModel):
+    id: int
+    user_id: int
+    building_id: int
+    last_used_at: datetime
+
+
+class UserUpdateSchema(BaseModel):
+    id: int
+    user_id: int
+    last_used_at: datetime
+
+
 class GetUserSchema(BaseModel):
     user: UserSchema

@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from city.dependencies import city_service
-from city.schema import BuildingSchema
+from city.schema import AddBuildingSchema, BuildingSchema
 from city.services import CityService
 from fastapi import APIRouter, Depends, status
 
@@ -17,7 +17,7 @@ city_router = APIRouter(prefix="/city", tags=["City"])
     },
 )
 async def add_building(
-    build: BuildingSchema,
+    build: AddBuildingSchema,
     service: Annotated[CityService, Depends(city_service)],
 ):
     building = await service.add_biulding(build)

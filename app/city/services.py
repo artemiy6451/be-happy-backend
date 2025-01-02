@@ -1,5 +1,5 @@
 from city.models import BuildingModel
-from city.schema import BuildingSchema
+from city.schema import AddBuildingSchema
 from database import async_session_maker
 from fastapi import HTTPException, status
 from repository import AbstractRepository
@@ -10,7 +10,7 @@ class CityService:
     def __init__(self, repository: type[AbstractRepository]) -> None:
         self.repository: AbstractRepository = repository(async_session_maker)
 
-    async def add_biulding(self, bilding: BuildingSchema):
+    async def add_biulding(self, bilding: AddBuildingSchema):
         try:
             building_dict = bilding.model_dump()
             building_id: int = await self.repository.add_one(building_dict)

@@ -1,7 +1,10 @@
-from models import Base, created_at, time_1971, updated_at, user_id
+import datetime
+
+from models import Base, build_id, created_at, time_1971, updated_at, user_id
+from sqlalchemy import DateTime, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from user.schemas import UserSchema
+from user.schemas import UserBuildingSchema, UserSchema, UserUpdateSchema
 
 
 class UserModel(Base):
@@ -25,6 +28,38 @@ class UserModel(Base):
             income=self.income,
             created_at=self.created_at,
             updated_at=self.updated_at,
+        )
+
+
+class UserBuildingModel(Base):
+    __tablename__ = "user_buildings"
+    user_id: Mapped[user_id]
+    build_id: Mapped[build_id]
+    last_used_at: Mapped[time_1971]
+
+    __table_args__ = (UniqueConstraint("user_id", "build_id", name="uq_user_building"),)
+
+    def to_read_model(self):
+        return UserBuildingSchema(
+            id=self.id,
+            user_id=self.user_id,
+            building_id=self.build_id,
+            last_used_at=self.last_used_at,
+        )
+
+
+class UserUpdateModel(Base):
+    __tablename__ = "user_update"
+    user_id: Mapped[user_id]
+    last_used_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=datetime.datetime.now(datetime.timezone.utc)
+        - datetime.timedelta(days=1, hours=1),
+    )
+
+    def to_read_model(self):
+        return UserUpdateSchema(
+            id=self.id, user_id=self.user_id, last_used_at=self.last_used_at
         )
 
 

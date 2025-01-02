@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Generic, Type, TypeVar
+from typing import Any, Callable, Generic, Optional, Type, TypeVar
 
 from models import Base
 from sqlalchemy import delete, insert, select, update
@@ -18,7 +18,7 @@ class AbstractRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def find_all(self) -> list:
+    async def find_all(self, filter_by: Optional[Any]) -> list:
         raise NotImplementedError
 
     @abstractmethod
@@ -46,8 +46,10 @@ class SQLAlchemyRepository(AbstractRepository, Generic[T]):
         row = res.scalar_one_or_none()
         return row
 
-    async def find_all(self) -> list[T]:
+    async def find_all(self, filter_by: Optional[Any] = None) -> list[T]:
         stmt = select(self.model)
+        if filter_by is not None:
+            stmt = stmt.where(filter_by)
         res = await self.session.execute(stmt)
         res = [row[0].to_read_model() for row in res.all()]
         return res

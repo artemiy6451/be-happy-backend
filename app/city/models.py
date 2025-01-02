@@ -11,6 +11,7 @@ class BuildingModel(Base):
 
     def to_read_model(self):
         return BuildingSchema(
+            id=self.id,
             name=self.name,
             income=self.income,
             cost=self.cost,

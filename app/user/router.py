@@ -6,6 +6,7 @@ from user.dependencies import user_service
 from user.schemas import (
     GetUserSchema,
     UserBalanceSchema,
+    UserBuildingSchema,
 )
 from user.services import AddUserSchema, UserService
 
@@ -74,3 +75,36 @@ async def earn_daily(
 ):
     balance = await service.earn(user_id)
     return balance
+
+
+@user_router.post(
+    "/{user_id}/buy_building",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": UserBalanceSchema},
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
+)
+async def buy_building(
+    user_id: int,
+    building_id: int,
+    service: Annotated[UserService, Depends(user_service)],
+):
+    balance = await service.buy_building(user_id, building_id)
+    return balance
+
+
+@user_router.get(
+    "/{user_id}/get_buildings",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": list[UserBuildingSchema]},
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
+)
+async def get_buildings(
+    user_id: int,
+    service: Annotated[UserService, Depends(user_service)],
+):
+    buildings = await service.get_user_buildings(user_id)
+    return buildings

@@ -31,11 +31,14 @@ def default_1971() -> datetime.datetime:
 time_1971 = Annotated[
     datetime.datetime,
     mapped_column(
+        DateTime(timezone=True),
         default=default_1971,
+        onupdate=datetime.datetime.now(datetime.timezone.utc),
     ),
 ]
 
 user_id = Annotated[int, mapped_column(ForeignKey("users.id", ondelete="CASCADE"))]
+build_id = Annotated[int, mapped_column(ForeignKey("buildings.id", ondelete="CASCADE"))]
 
 
 class Base(DeclarativeBase):
