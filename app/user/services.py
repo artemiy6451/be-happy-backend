@@ -76,13 +76,13 @@ class UserService:
         update_time = update_time_list[0]
 
         user_model: UserModel = await self.user_repository.find_one(id=user_id)
-        user = user_model.to_read_model()
-
         if user_model is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Can not get user with id: {user_id}",
             )
+        user = user_model.to_read_model()
+
         now_utc = datetime.datetime.now(datetime.timezone.utc)
 
         if update_time.last_used_at.tzinfo is None:
@@ -99,6 +99,7 @@ class UserService:
             )
 
         data = {"balance": user.balance + user.income}
+
         updated_user: UserSchema = await self.user_repository.update_one(
             id=user.id, data=data
         )
@@ -108,6 +109,22 @@ class UserService:
             user_id=updated_user.id,
             balance=updated_user.balance,
             income=updated_user.income,
+        )
+
+    async def earn_by_click(self, user_id: int) -> UserBalanceSchema:
+        user_model: UserModel = await self.user_repository.find_one(id=user_id)
+        if user_model is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Can not get user with id: {user_id}",
+            )
+        user = user_model.to_read_model()
+        new_balance = user.balance + Settings().earn_by_click_amount
+        balance = await self.update_balance(user_id=user.id, new_balance=new_balance)
+        return UserBalanceSchema(
+            user_id=user.id,
+            balance=balance,
+            income=user.income,
         )
 
     async def update_balance(self, user_id: int, new_balance: int) -> int:
@@ -143,18 +160,22 @@ class UserService:
                 status_code=status.HTTP_404_NOT_FOUND, detail="Building not found."
             )
 
-        if balance.balance >= building.cost:
-            new_balance = balance.balance - building.cost
-            new_income = balance.income + building.income
-            data = {
-                "user_id": user_id,
-                "build_id": building_id,
-            }
-            user_building_id = await self.user_buildings_repository.add_one(data)
-            print(f"{user_building_id=}")
+        if balance.balance < building.cost:
+            raise HTTPException(
+                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+                detail="Not enough money.",
+            )
+        new_balance = balance.balance - building.cost
+        new_income = balance.income + building.income
+        data = {
+            "user_id": user_id,
+            "build_id": building_id,
+        }
 
-            await self.update_income(user_id=user_id, new_income=new_income)
-            await self.update_balance(user_id=user_id, new_balance=new_balance)
+        await self.user_buildings_repository.add_one(data)
+
+        await self.update_income(user_id=user_id, new_income=new_income)
+        await self.update_balance(user_id=user_id, new_balance=new_balance)
         new_user_balance = await self.get_balance(user_id)
         return new_user_balance
 

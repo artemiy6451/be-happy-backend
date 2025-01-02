@@ -108,3 +108,19 @@ async def get_buildings(
 ):
     buildings = await service.get_user_buildings(user_id)
     return buildings
+
+
+@user_router.post(
+    "/{user_id}/earn_by_click",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": UserBalanceSchema},
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
+)
+async def earn_by_click(
+    user_id: int,
+    service: Annotated[UserService, Depends(user_service)],
+):
+    balance = await service.earn_by_click(user_id)
+    return balance
