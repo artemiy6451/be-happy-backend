@@ -13,6 +13,7 @@ class AddUserSchema(BaseModel):
 class UserSchema(AddUserSchema):
     balance: int
     income: int
+    level: int
     created_at: datetime
     updated_at: datetime
 
@@ -21,6 +22,7 @@ class UserBalanceSchema(BaseModel):
     user_id: int
     balance: int
     income: int
+    level: int
 
 
 class UserCardModel(BaseModel):

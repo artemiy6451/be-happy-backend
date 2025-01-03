@@ -14,6 +14,7 @@ class UserModel(Base):
     username: Mapped[str]
     balance: Mapped[int] = mapped_column(default=0)
     income: Mapped[int] = mapped_column(default=0)
+    level: Mapped[int] = mapped_column(default=1)
 
     created_at: Mapped[created_at]
     updated_at: Mapped[updated_at]
@@ -26,6 +27,7 @@ class UserModel(Base):
             username=self.username,
             balance=self.balance,
             income=self.income,
+            level=self.level,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )

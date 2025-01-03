@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     daily_reward_time: int = 24
     card_reward_time: int = 3
     earn_by_click_amount: int = 3
+    level_multiplier: float = 1
 
     cors_ip: str = ""
 

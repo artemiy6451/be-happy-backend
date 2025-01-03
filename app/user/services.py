@@ -74,7 +74,7 @@ class UserService:
             )
         user = response.to_read_model()
         return UserBalanceSchema(
-            user_id=user.id, balance=user.balance, income=user.income
+            user_id=user.id, balance=user.balance, income=user.income, level=user.level
         )
 
     async def earn(self, user_id: int) -> UserBalanceSchema:
@@ -105,7 +105,7 @@ class UserService:
                 detail="Not ready.",
             )
 
-        data = {"balance": user.balance + user.income}
+        data = {"balance": user.balance + (user.income)}
 
         updated_user: UserSchema = await self.user_repository.update_one(
             id=user.id, data=data
@@ -116,6 +116,7 @@ class UserService:
             user_id=updated_user.id,
             balance=updated_user.balance,
             income=updated_user.income,
+            level=updated_user.level,
         )
 
     async def earn_by_click(self, user_id: int) -> UserBalanceSchema:
@@ -129,9 +130,7 @@ class UserService:
         new_balance = user.balance + Settings().earn_by_click_amount
         balance = await self.update_balance(user_id=user.id, new_balance=new_balance)
         return UserBalanceSchema(
-            user_id=user.id,
-            balance=balance,
-            income=user.income,
+            user_id=user.id, balance=balance, income=user.income, level=user.level
         )
 
     async def update_balance(self, user_id: int, new_balance: int) -> int:
@@ -147,6 +146,11 @@ class UserService:
         }
         user = await self.user_repository.update_one(id=user_id, data=data)
         return user.income
+
+    async def update_level(self, user_id: int, new_level: int) -> int:
+        data = {"level": new_level}
+        user = await self.user_repository.update_one(id=user_id, data=data)
+        return user.level
 
     async def buy_building(self, user_id: int, building_id: int) -> UserBalanceSchema:
         filter = (UserBuildingModel.user_id == user_id) & (
@@ -173,7 +177,10 @@ class UserService:
                 detail="Not enough money.",
             )
         new_balance = balance.balance - building.cost
-        new_income = balance.income + building.income
+        new_income = balance.income + (
+            building.income * balance.level * Settings().level_multiplier
+        )
+        new_level = balance.level + 1
         data = {
             "user_id": user_id,
             "build_id": building_id,
@@ -183,6 +190,7 @@ class UserService:
 
         await self.update_income(user_id=user_id, new_income=new_income)
         await self.update_balance(user_id=user_id, new_balance=new_balance)
+        await self.update_level(user_id=user_id, new_level=new_level)
         new_user_balance = await self.get_balance(user_id)
         return new_user_balance
 
