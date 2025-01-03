@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from repository import AbstractRepository
 from sqlalchemy.exc import IntegrityError
 from starlette import status
+from telegram_webapp_auth.auth import TelegramUser
 
 from user.models import UserBuildingModel, UserModel, UserUpdateModel
 from user.repository import UserBuildingRepository, UserUpdateRepository
@@ -28,9 +29,15 @@ class UserService:
             async_session_maker
         )
 
-    async def add_user(self, user_data: AddUserSchema) -> UserSchema:
+    async def add_user(self, user_data: TelegramUser) -> UserSchema:
         try:
-            user_dict = user_data.model_dump()
+            user = AddUserSchema(
+                id=user_data.id,
+                first_name=user_data.first_name,
+                last_name=user_data.last_name if user_data.last_name else "",
+                username=user_data.username if user_data.username else "",
+            )
+            user_dict = user.model_dump()
             user_id: int = await self.user_repository.add_one(user_dict)
             data = {"user_id": user_id}
             await self.user_update_repository.add_one(data)
