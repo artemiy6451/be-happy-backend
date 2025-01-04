@@ -53,7 +53,12 @@ class UserBuildingModel(Base):
 class UserUpdateModel(Base):
     __tablename__ = "user_update"
     user_id: Mapped[user_id]
-    last_used_at: Mapped[datetime.datetime] = mapped_column(
+    last_earn_daily: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=datetime.datetime.now(datetime.timezone.utc)
+        - datetime.timedelta(days=1, hours=1),
+    )
+    last_earn_debit_card: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         default=datetime.datetime.now(datetime.timezone.utc)
         - datetime.timedelta(days=1, hours=1),
@@ -61,20 +66,8 @@ class UserUpdateModel(Base):
 
     def to_read_model(self):
         return UserUpdateSchema(
-            id=self.id, user_id=self.user_id, last_used_at=self.last_used_at
-        )
-
-
-class UserCardModel(Base):
-    __tablename__ = "cards"
-    user_id: Mapped[user_id]
-    card_name: Mapped[str]
-    last_used_at: Mapped[time_1971]
-
-    def to_read_model(self):
-        return UserCardModel(
             id=self.id,
             user_id=self.user_id,
-            card_name=self.card_name,
-            last_used_at=self.last_used_at,
+            last_earn_daily=self.last_earn_daily,
+            last_earn_debit_card=self.last_earn_debit_card,
         )

@@ -25,13 +25,6 @@ class UserBalanceSchema(BaseModel):
     level: int
 
 
-class UserCardModel(BaseModel):
-    id: int
-    user_id: int
-    card_name: str
-    last_used_at: datetime
-
-
 class UserBuildingSchema(BaseModel):
     id: int
     user_id: int
@@ -52,7 +45,8 @@ class UserBuildingWithNamesSchema(BaseModel):
 class UserUpdateSchema(BaseModel):
     id: int
     user_id: int
-    last_used_at: datetime
+    last_earn_daily: datetime
+    last_earn_debit_card: datetime
 
 
 class GetUserSchema(BaseModel):

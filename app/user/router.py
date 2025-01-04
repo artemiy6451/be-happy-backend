@@ -9,6 +9,7 @@ from user.schemas import (
     GetUserSchema,
     UserBalanceSchema,
     UserBuildingWithNamesSchema,
+    UserUpdateSchema,
 )
 from user.services import UserService
 
@@ -126,3 +127,35 @@ async def earn_by_click(
 ):
     balance = await service.earn_by_click(user_data.id)
     return balance
+
+
+@user_router.post(
+    "/earn_card",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": UserBalanceSchema},
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
+)
+async def earn_card(
+    service: Annotated[UserService, Depends(user_service)],
+    user_data: TelegramUser = Depends(get_current_user),
+):
+    balance = await service.earn_debit_card(user_data.id)
+    return balance
+
+
+@user_router.get(
+    "/get_updates",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": UserUpdateSchema},
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
+)
+async def get_updates(
+    service: Annotated[UserService, Depends(user_service)],
+    user_data: TelegramUser = Depends(get_current_user),
+):
+    updates = await service.get_updates(user_data.id)
+    return updates

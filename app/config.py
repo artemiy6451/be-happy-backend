@@ -11,12 +11,14 @@ class Settings(BaseSettings):
     db_user: str = ""
     db_pass: str = ""
 
-    daily_reward_time: int = 24
-    card_reward_time: int = 3
+    cors_ip: str = ""
+
     earn_by_click_amount: int = 3
+    earn_by_card_amount: int = 500
     level_multiplier: float = 1
 
-    cors_ip: str = ""
+    daily_reward_time: int = 24
+    card_reward_time: int = 1
 
     @property
     def database_uri(self):

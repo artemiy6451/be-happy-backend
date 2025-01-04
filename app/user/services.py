@@ -17,6 +17,7 @@ from user.schemas import (
     UserBalanceSchema,
     UserBuildingWithNamesSchema,
     UserSchema,
+    UserUpdateSchema,
 )
 
 
@@ -93,12 +94,12 @@ class UserService:
 
         now_utc = datetime.datetime.now(datetime.timezone.utc)
 
-        if update_time.last_used_at.tzinfo is None:
-            update_time.last_used_at = update_time.last_used_at.replace(
+        if update_time.last_earn_daily.tzinfo is None:
+            update_time.last_earn_daily = update_time.last_earn_daily.replace(
                 tzinfo=datetime.timezone.utc
             )
 
-        delta_in_hours = (now_utc - update_time.last_used_at).total_seconds() // 3600
+        delta_in_hours = (now_utc - update_time.last_earn_daily).total_seconds() // 3600
 
         if not (delta_in_hours >= Settings().daily_reward_time):
             raise HTTPException(
@@ -111,7 +112,7 @@ class UserService:
         updated_user: UserSchema = await self.user_repository.update_one(
             id=user.id, data=data
         )
-        data = {"last_used_at": datetime.datetime.now(datetime.timezone.utc)}
+        data = {"last_earn_daily": datetime.datetime.now(datetime.timezone.utc)}
         await self.user_update_repository.update_one(id=update_time.id, data=data)
         return UserBalanceSchema(
             user_id=updated_user.id,
@@ -132,6 +133,50 @@ class UserService:
         balance = await self.update_balance(user_id=user.id, new_balance=new_balance)
         return UserBalanceSchema(
             user_id=user.id, balance=balance, income=user.income, level=user.level
+        )
+
+    async def earn_debit_card(self, user_id: int) -> UserBalanceSchema:
+        filter = UserUpdateModel.user_id == user_id
+        update_time_list = await self.user_update_repository.find_all(filter)
+        update_time = update_time_list[0]
+
+        user_model: UserModel = await self.user_repository.find_one(id=user_id)
+        if user_model is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Can not get user with id: {user_id}",
+            )
+        user = user_model.to_read_model()
+
+        now_utc = datetime.datetime.now(datetime.timezone.utc)
+
+        if update_time.last_earn_debit_card.tzinfo is None:
+            update_time.last_earn_debit_card = update_time.last_earn_debit_card.replace(
+                tzinfo=datetime.timezone.utc
+            )
+
+        delta_in_hours = (
+            now_utc - update_time.last_earn_debit_card
+        ).total_seconds() // 3600
+
+        if not (delta_in_hours >= Settings().card_reward_time):
+            raise HTTPException(
+                status_code=status.HTTP_423_LOCKED,
+                detail="Not ready.",
+            )
+
+        data = {"balance": user.balance + (Settings().earn_by_card_amount)}
+
+        updated_user: UserSchema = await self.user_repository.update_one(
+            id=user.id, data=data
+        )
+        data = {"last_earn_debit_card": datetime.datetime.now(datetime.timezone.utc)}
+        await self.user_update_repository.update_one(id=update_time.id, data=data)
+        return UserBalanceSchema(
+            user_id=updated_user.id,
+            balance=updated_user.balance,
+            income=updated_user.income,
+            level=updated_user.level,
         )
 
     async def update_balance(self, user_id: int, new_balance: int) -> int:
@@ -223,3 +268,14 @@ class UserService:
             )
 
         return buildings
+
+    async def get_updates(self, user_id: int) -> UserUpdateSchema:
+        filter = UserUpdateModel.user_id == user_id
+        user_model: UserModel = await self.user_repository.find_one(id=user_id)
+        if user_model is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Can not get user with id: {user_id}",
+            )
+        update_time_list = await self.user_update_repository.find_all(filter)
+        return update_time_list[0]
