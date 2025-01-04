@@ -46,10 +46,22 @@ class SQLAlchemyRepository(AbstractRepository, Generic[T]):
         row = res.scalar_one_or_none()
         return row
 
-    async def find_all(self, filter_by: Optional[Any] = None) -> list[T]:
+    async def find_all(
+        self,
+        filter_by: Optional[Any] = None,
+        join_by: Optional[tuple[Any, Any, Any]] = None,
+    ) -> list[T]:
         stmt = select(self.model)
+        if join_by:
+            stmt = select(self.model, join_by[1])
+            stmt = stmt.select_from(join_by[0]).join(*join_by[1:])
         if filter_by is not None:
             stmt = stmt.where(filter_by)
+        if join_by:
+            res = await self.session.execute(stmt)
+            res = list(res.all())
+            return res
+
         res = await self.session.execute(stmt)
         res = [row[0].to_read_model() for row in res.all()]
         return res

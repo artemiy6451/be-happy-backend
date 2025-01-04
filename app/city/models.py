@@ -8,6 +8,7 @@ class BuildingModel(Base):
     name: Mapped[str] = mapped_column(unique=True)
     income: Mapped[int]
     cost: Mapped[int]
+    icon_url: Mapped[str]
 
     def to_read_model(self):
         return BuildingSchema(
@@ -15,4 +16,5 @@ class BuildingModel(Base):
             name=self.name,
             income=self.income,
             cost=self.cost,
+            icon_url=self.icon_url,
         )

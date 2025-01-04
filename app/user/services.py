@@ -1,5 +1,6 @@
 import datetime
 
+from city.models import BuildingModel
 from city.repository import CityRepository
 from config import Settings
 from database import async_session_maker
@@ -14,7 +15,7 @@ from user.repository import UserBuildingRepository, UserUpdateRepository
 from user.schemas import (
     AddUserSchema,
     UserBalanceSchema,
-    UserBuildingSchema,
+    UserBuildingWithNamesSchema,
     UserSchema,
 )
 
@@ -194,9 +195,31 @@ class UserService:
         new_user_balance = await self.get_balance(user_id)
         return new_user_balance
 
-    async def get_user_buildings(self, user_id: int) -> list[UserBuildingSchema]:
+    async def get_user_buildings(
+        self, user_id: int
+    ) -> list[UserBuildingWithNamesSchema]:
         filter = UserBuildingModel.user_id == user_id
-        user_buildings: list[UserBuildingSchema] = (
-            await self.user_buildings_repository.find_all(filter)
+        join = (
+            UserBuildingModel,
+            BuildingModel,
+            UserBuildingModel.build_id == BuildingModel.id,
         )
-        return user_buildings
+        user_buildings: list[tuple[UserBuildingModel, BuildingModel]] = (
+            await self.user_buildings_repository.find_all(filter, join)
+        )
+
+        buildings: list[UserBuildingWithNamesSchema] = []
+        for user, building in user_buildings:
+            buildings.append(
+                UserBuildingWithNamesSchema(
+                    user_id=user.user_id,
+                    building_id=building.id,
+                    name=building.name,
+                    income=building.income,
+                    cost=building.cost,
+                    icon_url=building.icon_url,
+                    last_used_at=user.last_used_at,
+                )
+            )
+
+        return buildings

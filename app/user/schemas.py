@@ -39,6 +39,16 @@ class UserBuildingSchema(BaseModel):
     last_used_at: datetime
 
 
+class UserBuildingWithNamesSchema(BaseModel):
+    user_id: int
+    building_id: int
+    name: str
+    income: int
+    cost: int
+    icon_url: str
+    last_used_at: datetime
+
+
 class UserUpdateSchema(BaseModel):
     id: int
     user_id: int

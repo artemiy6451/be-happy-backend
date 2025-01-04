@@ -8,7 +8,7 @@ from user.dependencies import user_service
 from user.schemas import (
     GetUserSchema,
     UserBalanceSchema,
-    UserBuildingSchema,
+    UserBuildingWithNamesSchema,
 )
 from user.services import UserService
 
@@ -100,7 +100,7 @@ async def buy_building(
     "/get_buildings",
     status_code=status.HTTP_200_OK,
     responses={
-        status.HTTP_200_OK: {"model": list[UserBuildingSchema]},
+        status.HTTP_200_OK: {"model": list[UserBuildingWithNamesSchema]},
         status.HTTP_404_NOT_FOUND: {"description": "User not found"},
     },
 )

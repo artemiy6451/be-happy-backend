@@ -6,7 +6,7 @@ from user.router import user_router
 
 app = FastAPI()
 
-origins = ["https://localhost", "https://localhost:5173", Settings().cors_ip]
+origins = ["https://192.168.0.108:5173", "https://localhost:5173", Settings().cors_ip]
 
 app.add_middleware(
     CORSMiddleware,
