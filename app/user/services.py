@@ -18,6 +18,7 @@ from user.repository import (
 )
 from user.schemas import (
     AddUserSchema,
+    AllReferalsSchema,
     UserBalanceSchema,
     UserBuildingWithNamesSchema,
     UserSchema,
@@ -342,3 +343,20 @@ class UserService:
         await self.user_referal_repository.add_one(data)
 
         return referal_user
+
+    async def get_all_referals(self) -> list[AllReferalsSchema]:
+        join = (
+            UserReferalModel,
+            UserModel,
+            UserReferalModel.referer_id == UserModel.id,
+        )
+
+        users = await self.user_referal_repository.find_all(join_by=join)
+        parsed_users: list[AllReferalsSchema] = []
+        for _, user in users:
+            parsed_users.append(
+                AllReferalsSchema(
+                    user_id=user.id, fristname=user.first_name, referals=user.referals
+                )
+            )
+        return parsed_users

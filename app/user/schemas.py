@@ -55,5 +55,11 @@ class UserReferalsSchema(BaseModel):
     referal_id: int
 
 
+class AllReferalsSchema(BaseModel):
+    user_id: int
+    fristname: str
+    referals: int
+
+
 class GetUserSchema(BaseModel):
     user: UserSchema

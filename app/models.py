@@ -1,7 +1,7 @@
 import datetime
 from typing import Annotated
 
-from sqlalchemy import DateTime, ForeignKey, Integer, MetaData, text
+from sqlalchemy import BigInteger, DateTime, ForeignKey, MetaData, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 metadata = MetaData()
@@ -21,7 +21,7 @@ updated_at = Annotated[
     ),
 ]
 
-idpk = Annotated[int, mapped_column(Integer, primary_key=True)]
+idpk = Annotated[int, mapped_column(BigInteger, primary_key=True)]
 
 
 def default_1971() -> datetime.datetime:

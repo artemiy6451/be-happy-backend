@@ -6,6 +6,7 @@ from telegram_webapp_auth.auth import TelegramUser
 
 from user.dependencies import user_service
 from user.schemas import (
+    AllReferalsSchema,
     GetUserSchema,
     UserBalanceSchema,
     UserBuildingWithNamesSchema,
@@ -177,3 +178,19 @@ async def add_referal(
 ):
     user = await service.add_referal(referer_id, user_data.id)
     return user
+
+
+@user_router.get(
+    "/get_referals",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": list[AllReferalsSchema]},
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
+)
+async def get_referals(
+    service: Annotated[UserService, Depends(user_service)],
+    _: TelegramUser = Depends(get_current_user),
+):
+    referals = await service.get_all_referals()
+    return referals
