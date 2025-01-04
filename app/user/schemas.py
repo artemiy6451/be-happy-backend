@@ -14,6 +14,7 @@ class UserSchema(AddUserSchema):
     balance: int
     income: int
     level: int
+    referals: int
     created_at: datetime
     updated_at: datetime
 
@@ -47,6 +48,11 @@ class UserUpdateSchema(BaseModel):
     user_id: int
     last_earn_daily: datetime
     last_earn_debit_card: datetime
+
+
+class UserReferalsSchema(BaseModel):
+    referer_id: int
+    referal_id: int
 
 
 class GetUserSchema(BaseModel):

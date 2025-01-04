@@ -10,8 +10,12 @@ from sqlalchemy.exc import IntegrityError
 from starlette import status
 from telegram_webapp_auth.auth import TelegramUser
 
-from user.models import UserBuildingModel, UserModel, UserUpdateModel
-from user.repository import UserBuildingRepository, UserUpdateRepository
+from user.models import UserBuildingModel, UserModel, UserReferalModel, UserUpdateModel
+from user.repository import (
+    UserBuildingRepository,
+    UserReferalRepository,
+    UserUpdateRepository,
+)
 from user.schemas import (
     AddUserSchema,
     UserBalanceSchema,
@@ -30,6 +34,9 @@ class UserService:
         self.user_update_repository: AbstractRepository = UserUpdateRepository(
             async_session_maker
         )
+        self.user_referal_repository: AbstractRepository = UserReferalRepository(
+            async_session_maker
+        )
 
     async def add_user(self, user_data: TelegramUser) -> UserSchema:
         try:
@@ -43,6 +50,7 @@ class UserService:
             user_id: int = await self.user_repository.add_one(user_dict)
             data = {"user_id": user_id}
             await self.user_update_repository.add_one(data)
+
             user_model: UserModel = await self.user_repository.find_one(id=user_id)
             if user_model is None:
                 raise HTTPException(
@@ -58,6 +66,7 @@ class UserService:
             ) from exc
 
     async def get_user(self, user_id: int) -> UserSchema:
+        # TODO: вынести проверку пользователя в отдельную функцию на рефакторинге
         response: UserModel = await self.user_repository.find_one(id=user_id)
         if response is None:
             raise HTTPException(
@@ -279,3 +288,57 @@ class UserService:
             )
         update_time_list = await self.user_update_repository.find_all(filter)
         return update_time_list[0]
+
+    async def add_referal(self, referer_id: int, referal_id: int) -> UserSchema:
+        if referer_id == referal_id:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Can not referal your own account",
+            )
+
+        filter = (UserReferalModel.referer_id == referer_id) & (
+            UserReferalModel.referal_id == referal_id
+        )
+        referal = await self.user_referal_repository.find_all(filter)
+
+        if referal:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="You already referal this account",
+            )
+
+        filter = (UserReferalModel.referer_id == referal_id) & (
+            UserReferalModel.referal_id == referer_id
+        )
+        referal = await self.user_referal_repository.find_all(filter)
+
+        if referal:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="You can not referal account that referal you",
+            )
+
+        referer_model: UserModel = await self.user_repository.find_one(id=referer_id)
+        if referer_model is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Can not get user with id: {referer_id}",
+            )
+
+        referal_model: UserModel = await self.user_repository.find_one(id=referal_id)
+        if referal_model is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Can not get user with id: {referer_id}",
+            )
+        referer_user = referer_model.to_read_model()
+        referal_user = referal_model.to_read_model()
+
+        data = {"referals": referer_user.referals + 1}
+        referer_user = await self.user_repository.update_one(
+            id=referer_user.id, data=data
+        )
+        data = {"referer_id": referer_id, "referal_id": referal_id}
+        await self.user_referal_repository.add_one(data)
+
+        return referal_user

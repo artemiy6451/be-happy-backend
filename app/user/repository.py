@@ -1,6 +1,6 @@
 from repository import SQLAlchemyRepository
 
-from user.models import UserBuildingModel, UserModel, UserUpdateModel
+from user.models import UserBuildingModel, UserModel, UserReferalModel, UserUpdateModel
 
 
 class UserRepository(SQLAlchemyRepository):
@@ -13,3 +13,7 @@ class UserBuildingRepository(SQLAlchemyRepository):
 
 class UserUpdateRepository(SQLAlchemyRepository):
     model = UserUpdateModel
+
+
+class UserReferalRepository(SQLAlchemyRepository):
+    model = UserReferalModel

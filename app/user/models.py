@@ -4,7 +4,12 @@ from models import Base, build_id, created_at, time_1971, updated_at, user_id
 from sqlalchemy import DateTime, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from user.schemas import UserBuildingSchema, UserSchema, UserUpdateSchema
+from user.schemas import (
+    UserBuildingSchema,
+    UserReferalsSchema,
+    UserSchema,
+    UserUpdateSchema,
+)
 
 
 class UserModel(Base):
@@ -15,6 +20,7 @@ class UserModel(Base):
     balance: Mapped[int] = mapped_column(default=0)
     income: Mapped[int] = mapped_column(default=0)
     level: Mapped[int] = mapped_column(default=1)
+    referals: Mapped[int] = mapped_column(default=0)
 
     created_at: Mapped[created_at]
     updated_at: Mapped[updated_at]
@@ -28,6 +34,7 @@ class UserModel(Base):
             balance=self.balance,
             income=self.income,
             level=self.level,
+            referals=self.referals,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )
@@ -71,3 +78,12 @@ class UserUpdateModel(Base):
             last_earn_daily=self.last_earn_daily,
             last_earn_debit_card=self.last_earn_debit_card,
         )
+
+
+class UserReferalModel(Base):
+    __tablename__ = "user_referals"
+    referer_id: Mapped[user_id]
+    referal_id: Mapped[user_id]
+
+    def to_read_model(self):
+        return UserReferalsSchema(referer_id=self.referer_id, referal_id=self.referal_id)

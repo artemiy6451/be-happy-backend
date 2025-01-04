@@ -9,6 +9,7 @@ from user.schemas import (
     GetUserSchema,
     UserBalanceSchema,
     UserBuildingWithNamesSchema,
+    UserSchema,
     UserUpdateSchema,
 )
 from user.services import UserService
@@ -159,3 +160,20 @@ async def get_updates(
 ):
     updates = await service.get_updates(user_data.id)
     return updates
+
+
+@user_router.post(
+    "/add_referal/{referer_id}",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": UserSchema},
+        status.HTTP_404_NOT_FOUND: {"description": "User not found"},
+    },
+)
+async def add_referal(
+    referer_id: int,
+    service: Annotated[UserService, Depends(user_service)],
+    user_data: TelegramUser = Depends(get_current_user),
+):
+    user = await service.add_referal(referer_id, user_data.id)
+    return user
