@@ -85,5 +85,9 @@ class UserReferalModel(Base):
     referer_id: Mapped[user_id]
     referal_id: Mapped[user_id]
 
+    __table_args__ = (
+        UniqueConstraint("referer_id", "referal_id", name="uq_user_referals"),
+    )
+
     def to_read_model(self):
         return UserReferalsSchema(referer_id=self.referer_id, referal_id=self.referal_id)

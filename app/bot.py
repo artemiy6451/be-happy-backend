@@ -17,7 +17,7 @@ def report(message: Message):
     if refer_id:
         miniapp_button = InlineKeyboardButton(
             text="Open app",
-            url=f"https://t.me/lokach_dev_bot?startapp=lokachApp?refer_id={refer_id}",
+            url=f"https://t.me/lokach_dev_bot?startapp={refer_id}",
         )
         markup.add(miniapp_button)
     else:
